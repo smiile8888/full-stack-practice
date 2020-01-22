@@ -1,0 +1,21 @@
+{
+  "name": "full-stack-development-practice",
+  "version": "1.0.0",
+  "description": "Practice full stack development skills",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Thanyathorn Thanapattheerakul",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fast-csv": "^4.0.2",
+    "fs": "0.0.1-security",
+    "mysql": "^2.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
