@@ -1,3 +1,4 @@
 # All these are not tracking
 
+.env
 node_modules/
