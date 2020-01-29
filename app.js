@@ -13,24 +13,8 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-// // Creat connection to database
-// const db = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     password: 'admin',
-//     database: 'systemDB'
-// });
-
-// // Connect to database
-// db.connect((err) => {
-//     if (err) {
-//         throw err;
-//     } else {
-//         console.log('Connect to database successfully!');
-//     }
-// });
-
-// global.db = db;
+// Create customers table
+db.createCustomersTable();
 
 // Route setting
 // app.use('/api/customers', customers);
