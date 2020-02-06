@@ -3,38 +3,6 @@ const csvParser = require('csv-parser');
 const { Pool } = require('pg');
 const db = require('./db');
 
-const pool = new Pool({
-    // Using the credential specified in .env file
-    connectionString: process.env.DATABASE_URL
-});
-
-pool.connect().then(console.log("Connected to DB..."));
-
-const createCustomersTable = () => {
-    const queryText = `CREATE TABLE IF NOT EXISTS
-                        customers(
-                            ID SERIAL PRIMARY KEY,
-                            created_at TIMESTAMP,
-                            first_name VARCHAR(30),
-                            last_name VARCHAR(30),
-                            email VARCHAR(30),
-                            logitude TEXT,
-                            latitude TEXT,
-                            ip TEXT
-                        )`;
-    return new Promise((resolve, reject) => {
-        pool.query(queryText)
-        .then((res) => {
-            resolve(res);
-            pool.end();
-        })
-        .catch((err) => {
-            reject(err);
-            pool.end();
-        });
-    })
-}
-
 /**
  * Read .csv file
  * @param {String} dataPath     Path of file
@@ -77,13 +45,8 @@ const mapHeader = (mapper) => {
  */
 const loadDataToDB = (data) => {
     let value = `'${data.created_at}', '${data.first_name}', '${data.last_name}', '${data.email}', '${data.latitude}', '${data.longitude}', '${data.ip}'`;
-    let query = `INSERT INTO customers (created_at, first_name, last_name, email, latitude, logitude, ip) VALUES (${value})`;
-    console.log(query);
-    return new Promise((resolve, reject) => {
-        pool.query(query)
-        .then((res) => resolve(res))
-        .catch((err) => reject(err));
-    });
+    let query = `INSERT INTO customers (created_at, first_name, last_name, email, latitude, longitude, ip) VALUES (${value})`;
+    db.query(query).then((res) => console.log("1 record inserted")).catch((err) => console.log(err));
 }
 
 /**
@@ -95,7 +58,8 @@ const loadDataToDB = (data) => {
  */
 
 async function startETL() {
-    // await db.createCustomersTable().then("Table customers created...");
+    await db.dropCustomersTable().then((res) => console.log("Drop customers table..."));
+    await db.createCustomersTable().then((res) => console.log("Customers table created..."));
 
     /** Here is for map1.csv and data1.csv */
     let header = await getData("./etl/map1.csv");
@@ -114,6 +78,20 @@ async function startETL() {
     });
 
     /** Here is for map2.csv and data2.csv */
+    let header2 = await getData("./etl/map2.csv");
+    let headerMap2 = await mapHeader(header2[0]);
+    // console.log(headerMap);
+
+    let data2 = await getData("./etl/data2.csv");
+    data2.map((record) => {
+        // console.log("Inserting data");
+        let temp = {};
+        Object.keys(record).forEach(key => {
+            temp[headerMap2[key]] = record[key];
+        })
+        // console.log(temp);
+        loadDataToDB(temp);
+    });
 }
 
 startETL();

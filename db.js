@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const mysql = require('mysql');
 const dotenv = require('dotenv');
 
 // Using dotenv.config() to search for .env file
@@ -9,18 +10,21 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-pool.connect();
+pool.connect((err) => {
+    if (err) throw (err);
+    console.log("Connected to DB...")
+});
 
 const dbMethod = {
     /**
-     * DB query
-     * @param {object} req
-     * @param {object} res
-     * @returns {object} object
+     * Sending query to DB
+     * @param {String} queryText    DB query
+     * @param {String} param        (optional) additional parameters when do the query
+     * @returns {Promise}
      */
-    async query(text, params) {
+    async query(queryText, param) {
         return new Promise((resolve, reject) => {
-            pool.query(text, params)
+            pool.query(queryText, param)
             .then((res) => {
                 resolve(res);
             })
@@ -34,28 +38,27 @@ const dbMethod = {
      * Create customers table
      */
     async createCustomersTable() {
-        const queryText = `CREATE TABLE IF NOT EXISTS
-                            customers(
-                                ID SERIAL PRIMARY KEY,
-                                created_at TIMESTAMP,
-                                first_name VARCHAR(30),
-                                last_name VARCHAR(30),
-                                email VARCHAR(30),
-                                logitude TEXT,
-                                latitude TEXT,
-                                ip TEXT
+        const queryText = `CREATE TABLE IF NOT EXISTS 
+                            customers (
+                                id serial NOT NULL PRIMARY KEY,
+                                email varchar(255) NOT NULL DEFAULT '' UNIQUE,
+                                first_name varchar(30) DEFAULT NULL,
+                                last_name varchar(50) DEFAULT NULL,
+                                ip varchar(15) DEFAULT NULL,
+                                latitude decimal(10, 6) DEFAULT NULL,
+                                longitude decimal(10, 6) DEFAULT NULL,
+                                created_at timestamp NOT NULL
                             )`;
         return new Promise((resolve, reject) => {
             pool.query(queryText)
-            .then((res) => {
-                resolve(res);
-                pool.end();
-            })
-            .catch((err) => {
-                reject(err);
-                pool.end();
-            });
-        })
+                .then((res) => {
+                    resolve(res);
+                })
+                .catch((err) => {
+                    throw err;
+                    // reject(err);
+                });
+        });
     },
 
     /**
@@ -63,15 +66,16 @@ const dbMethod = {
      */
     async dropCustomersTable() {
         const queryText = `DROP TABLE IF EXISTS customers`;
-        pool.query(queryText)
-        .then((res) => {
-            console.log(res);
-            pool.end();
-        })
-        .catch((err) => {
-            console.log(err);
-            pool.end();
-        })
+        return new Promise((resolve, reject) => {
+            pool.query(queryText)
+                .then((res) => {
+                    resolve(res);
+                })
+                .catch((err) => {
+                    throw err;
+                    // reject(err);
+                });
+        });
     }
 }
 
