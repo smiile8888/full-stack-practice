@@ -9,9 +9,7 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-pool.on('connect', () => {
-    console.log('Connected to db!');
-});
+pool.connect();
 
 const dbMethod = {
     /**
@@ -47,15 +45,17 @@ const dbMethod = {
                                 latitude TEXT,
                                 ip TEXT
                             )`;
-        pool.query(queryText)
-        .then((res) => {
-            console.log(res);
-            pool.end();
+        return new Promise((resolve, reject) => {
+            pool.query(queryText)
+            .then((res) => {
+                resolve(res);
+                pool.end();
+            })
+            .catch((err) => {
+                reject(err);
+                pool.end();
+            });
         })
-        .catch((err) => {
-            console.log(err);
-            pool.end();
-        });
     },
 
     /**
