@@ -1,4 +1,5 @@
 # All these are not tracking
 
 .env
+.vscode
 node_modules/
